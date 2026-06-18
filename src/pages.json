@@ -1,0 +1,98 @@
+{
+  "pages": [
+    {
+      "path": "pages/entrance/index", // 角色入口页：选择老板端或员工端
+      "type": "home",
+      "style": {
+        "navigationStyle": "custom",
+        "enablePullDownRefresh": false
+      }
+    },
+    {
+      "path": "pages/auth/bind", // 未绑定微信：使用老板已创建手机号完成账号绑定
+      "style": {
+        "navigationStyle": "custom",
+        "enablePullDownRefresh": false
+      }
+    },
+    {
+      "path": "pages/modules/boss/home/index", // 老板端首页：机构业绩总览、趋势图、排行榜
+      "style": {
+        "navigationStyle": "custom",
+        "enablePullDownRefresh": false
+      }
+    },
+    {
+      "path": "pages/modules/boss/target/index", // 老板端业绩目标：查看本月目标完成率
+      "style": {
+        "navigationStyle": "custom",
+        "enablePullDownRefresh": false
+      }
+    },
+    {
+      "path": "pages/modules/boss/ranking/index", // 老板端销售排行：查看员工销售排行榜
+      "style": {
+        "navigationStyle": "custom",
+        "enablePullDownRefresh": false
+      }
+    },
+    {
+      "path": "pages/modules/boss/staff/index", // 老板端员工管理：查看员工列表与个人业绩
+      "style": {
+        "navigationStyle": "custom",
+        "enablePullDownRefresh": false
+      }
+    },
+    {
+      "path": "pages/modules/boss/staff/edit", // 老板端员工管理：新增或编辑员工资料
+      "style": {
+        "navigationStyle": "custom",
+        "enablePullDownRefresh": false
+      }
+    },
+    {
+      "path": "pages/modules/staff/home/index", // 员工端首页：个人业绩概览和趋势
+      "style": {
+        "navigationStyle": "custom",
+        "enablePullDownRefresh": false
+      }
+    },
+    {
+      "path": "pages/modules/staff/order/create", // 员工端录入订单：新增学员课程订单
+      "style": {
+        "navigationStyle": "custom",
+        "enablePullDownRefresh": false
+      }
+    },
+    {
+      "path": "pages/modules/staff/order/list", // 员工端订单列表：查看个人录入订单
+      "style": {
+        "navigationStyle": "custom",
+        "enablePullDownRefresh": false
+      }
+    },
+    {
+      "path": "pages/modules/staff/user/index", // 员工端个人中心：个人信息、设置和帮助入口
+      "style": {
+        "navigationStyle": "custom",
+        "enablePullDownRefresh": false
+      }
+    },
+    {
+      "path": "pages/modules/staff/user/password", // 员工端我的：修改登录密码
+      "style": {
+        "navigationStyle": "custom",
+        "enablePullDownRefresh": false
+      }
+    }
+  ],
+  "globalStyle": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "教培机构业绩助手",
+    "navigationBarBackgroundColor": "#F8F8F8",
+    "backgroundColor": "#F4F6FA",
+    "navigationStyle": "custom"
+  },
+  "subPackages": [],
+  "uniIdRouter": {}
+}
