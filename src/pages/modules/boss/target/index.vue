@@ -1,21 +1,27 @@
 <script setup>
+import { computed, onMounted, ref } from 'vue'
 import Header from '@/components/header/index.vue'
 import PageContainer from '@/components/base/page-container.vue'
 import ChartCard from '@/components/business/chart-card.vue'
 import SectionCard from '@/components/business/section-card.vue'
 import BottomNav from '@/components/business/bottom-nav.vue'
+import { queryBossTarget } from '@/api/dashboard'
 
-const targetChart = {
+const monthAmount = ref(0)
+const monthTarget = ref(0)
+const completionRate = ref(0)
+
+const targetChart = computed(() => ({
   series: [
     {
-      data: [{ name: '完成率', value: 0.86 }],
+      data: [{ name: '完成率', value: completionRate.value / 100 }],
     },
   ],
-}
+}))
 
-const opts = {
+const opts = computed(() => ({
   title: {
-    name: '86%',
+    name: `${completionRate.value}%`,
     fontSize: 24,
     color: '#182033',
   },
@@ -34,22 +40,36 @@ const opts = {
       gap: 2,
     },
   },
+}))
+
+const formatAmount = (value) => Number(value || 0).toLocaleString()
+
+const loadTarget = async () => {
+  const res = await queryBossTarget()
+  if (res.code !== 0) return
+  monthAmount.value = res.data.monthAmount
+  monthTarget.value = res.data.monthTarget
+  completionRate.value = res.data.completionRate || 0
 }
+
+onMounted(() => {
+  loadTarget()
+})
 </script>
 
 <template>
   <PageContainer>
     <Header title="业绩目标" show-back />
-    <view class="month-switch">‹ 2024年5月 ›</view>
+    <view class="month-switch">‹ 本月 ›</view>
     <chart-card title="" type="arcbar" :chart-data="targetChart" :opts="opts" />
     <section-card title="">
       <view class="target-row">
         <view class="target-block">
-          <view class="amount">86,200</view>
+          <view class="amount">{{ formatAmount(monthAmount) }}</view>
           <view class="muted">已完成（元）</view>
         </view>
         <view class="target-block">
-          <view class="amount">100,000</view>
+          <view class="amount">{{ formatAmount(monthTarget) }}</view>
           <view class="muted">目标金额（元）</view>
         </view>
       </view>

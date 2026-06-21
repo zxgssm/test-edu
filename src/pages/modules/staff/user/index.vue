@@ -1,10 +1,27 @@
 <script setup>
+import { computed } from 'vue'
 import Header from '@/components/header/index.vue'
 import PageContainer from '@/components/base/page-container.vue'
 import BottomNav from '@/components/business/bottom-nav.vue'
+import { clearAuth, getUser, ENTRANCE_URL } from '@/untils/auth'
+
+const user = computed(() => getUser() || {})
+
+const roleLabel = computed(() => {
+  return user.value.role === 'boss' ? '机构老板' : '销售老师'
+})
+
+const avatarText = computed(() => {
+  return (user.value.name || '?').slice(0, 1)
+})
 
 const goPassword = () => {
   uni.navigateTo({ url: '/pages/modules/staff/user/password' })
+}
+
+const logout = () => {
+  clearAuth()
+  uni.redirectTo({ url: ENTRANCE_URL })
 }
 </script>
 
@@ -12,10 +29,10 @@ const goPassword = () => {
   <PageContainer>
     <Header title="我的" show-back />
     <view class="profile card">
-      <view class="avatar">张</view>
+      <view class="avatar">{{ avatarText }}</view>
       <view>
-        <view class="name">张老师</view>
-        <view class="muted">销售老师</view>
+        <view class="name">{{ user.name || '未登录' }}</view>
+        <view class="muted">{{ roleLabel }}</view>
       </view>
     </view>
     <view class="menu card">
@@ -24,7 +41,7 @@ const goPassword = () => {
         <text class="arrow">›</text>
       </view>
     </view>
-    <view class="logout">退出登录</view>
+    <view class="logout" @click="logout">退出登录</view>
     <view class="bottom-space" />
     <bottom-nav role="staff" active="user" />
   </PageContainer>

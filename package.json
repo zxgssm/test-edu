@@ -7,6 +7,7 @@
     "dev": "unh dev",
     "dev:h5": "unh dev h5",
     "dev:mp-weixin": "unh dev mp-weixin",
+    "sync:cloud": "node scripts/sync-cloudfunctions.mjs",
     "build": "unh build",
     "build:h5": "unh build h5",
     "build:mp-weixin": "unh build mp-weixin",

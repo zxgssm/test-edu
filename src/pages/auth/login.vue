@@ -1,36 +1,39 @@
 <script setup>
 import { reactive, ref } from 'vue'
-import { bindPhone } from '@/api/auth'
-import {
-  clearPendingOpenid,
-  getPendingOpenid,
-  redirectByRole,
-  setAuth,
-} from '@/untils/auth'
+import { login } from '@/api/auth'
+import { finishAuthFlow } from '@/untils/auth'
+import { MOCK_CREDENTIALS } from '@/mock/auth'
 
 const form = reactive({
   phone: '',
+  password: '',
 })
 
 const loading = ref(false)
 
-const useMockPhone = () => {
+const useMockStaff = () => {
   form.phone = '13800000002'
+  form.password = MOCK_CREDENTIALS.staff
 }
 
-const submitBind = async () => {
-  if (!form.phone) {
+const useMockBoss = () => {
+  form.phone = '13900000001'
+  form.password = MOCK_CREDENTIALS.boss
+}
+
+const submitLogin = async () => {
+  if (!form.phone || !form.password) {
     uni.showToast({
-      title: '请输入手机号',
+      title: '请输入手机号和密码',
       icon: 'none',
     })
     return
   }
 
   loading.value = true
-  const res = await bindPhone({
-    openid: getPendingOpenid(),
+  const res = await login({
     phone: form.phone,
+    password: form.password,
   })
   loading.value = false
 
@@ -42,28 +45,27 @@ const submitBind = async () => {
     return
   }
 
-  setAuth(res.data)
-  clearPendingOpenid()
   uni.showToast({
-    title: '绑定成功',
+    title: '登录成功',
     icon: 'success',
   })
+
   setTimeout(() => {
-    redirectByRole(res.data.user.role)
-  }, 500)
+    finishAuthFlow(res.data)
+  }, 300)
 }
 </script>
 
 <template>
-  <view class="bind-page">
+  <view class="login-page">
     <view class="nav-placeholder">
-      <view class="page-title">绑定手机号</view>
+      <view class="page-title">账号登录</view>
     </view>
     <view class="fixed-header-placeholder"></view>
-    <view class="bind-card">
-      <view class="title">请绑定老板创建的员工账号</view>
+    <view class="login-card">
+      <view class="title">使用手机号登录</view>
       <view class="desc">
-        当前微信还没有绑定机构账号。只有当手机号已由老板在员工管理中创建，才可以完成绑定并进入系统。
+        首次登录或更换微信后，请使用老板提供的手机号和初始密码登录。登录成功后将自动绑定当前微信。
       </view>
 
       <view class="form-item">
@@ -73,35 +75,46 @@ const submitBind = async () => {
           class="input"
           type="number"
           maxlength="11"
-          placeholder="请输入老板创建的手机号"
+          placeholder="请输入手机号"
         />
       </view>
 
-      <view class="mock-tip" @click="useMockPhone">
-        使用 mock 待绑定员工手机号：13800000002
+      <view class="form-item">
+        <text class="label">密码</text>
+        <input
+          v-model="form.password"
+          class="input"
+          password
+          placeholder="请输入密码"
+        />
+      </view>
+
+      <view class="mock-tips">
+        <view class="mock-tip" @click="useMockBoss">mock 老板：13900000001</view>
+        <view class="mock-tip" @click="useMockStaff">mock 员工：13800000002</view>
       </view>
 
       <button
         class="submit-btn"
         :class="{ disabled: loading }"
         :disabled="loading"
-        @click="submitBind"
+        @click="submitLogin"
       >
-        {{ loading ? '绑定中...' : '确认绑定' }}
+        {{ loading ? '登录中...' : '登录' }}
       </button>
     </view>
 
     <view class="rule-card">
-      <view class="rule-title">绑定规则</view>
-      <view class="rule-item">1. 老板先在员工管理中创建员工手机号。</view>
-      <view class="rule-item">2. 员工首次打开小程序后，用该手机号绑定微信。</view>
-      <view class="rule-item">3. 绑定成功后，后续打开小程序会自动进入员工端。</view>
+      <view class="rule-title">登录说明</view>
+      <view class="rule-item">1. 已绑定微信的用户，打开小程序会自动登录。</view>
+      <view class="rule-item">2. 首次登录需使用老板创建的账号密码，并按要求修改密码。</view>
+      <view class="rule-item">3. 更换微信后，需重新使用手机号密码登录。</view>
     </view>
   </view>
 </template>
 
 <style scoped lang="scss">
-.bind-page {
+.login-page {
   min-height: 100vh;
   padding: 0 24rpx 40rpx;
   background: #f4f6fa;
@@ -130,7 +143,7 @@ const submitBind = async () => {
   font-weight: 700;
 }
 
-.bind-card,
+.login-card,
 .rule-card {
   padding: 32rpx 28rpx;
   border-radius: 24rpx;
@@ -152,7 +165,7 @@ const submitBind = async () => {
 }
 
 .form-item {
-  margin: 36rpx 0 20rpx;
+  margin-top: 28rpx;
 }
 
 .label {
@@ -173,8 +186,12 @@ const submitBind = async () => {
   font-size: 28rpx;
 }
 
+.mock-tips {
+  margin: 20rpx 0 32rpx;
+}
+
 .mock-tip {
-  margin-bottom: 32rpx;
+  margin-bottom: 8rpx;
   color: #2f7df6;
   font-size: 24rpx;
 }

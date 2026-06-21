@@ -1,8 +1,11 @@
 <script setup>
-import { reactive } from 'vue'
+import { onLoad } from '@dcloudio/uni-app'
+import { reactive, ref } from 'vue'
+import { changePassword } from '@/api/auth'
 import Header from '@/components/header/index.vue'
 import PageContainer from '@/components/base/page-container.vue'
 import DbbButton from '@/components/dbb-button.vue'
+import { getUser, redirectByRole, updateUser } from '@/untils/auth'
 
 const form = reactive({
   oldPassword: '',
@@ -10,18 +13,72 @@ const form = reactive({
   confirmPassword: '',
 })
 
-const savePassword = () => {
+const required = ref(false)
+const loading = ref(false)
+
+onLoad((options) => {
+  required.value = options?.required === '1'
+})
+
+const savePassword = async () => {
+  if (!form.oldPassword || !form.newPassword || !form.confirmPassword) {
+    uni.showToast({
+      title: '请填写完整',
+      icon: 'none',
+    })
+    return
+  }
+
+  if (form.newPassword !== form.confirmPassword) {
+    uni.showToast({
+      title: '两次输入的密码不一致',
+      icon: 'none',
+    })
+    return
+  }
+
+  loading.value = true
+  const res = await changePassword({
+    oldPassword: form.oldPassword,
+    newPassword: form.newPassword,
+  })
+  loading.value = false
+
+  if (res.code !== 0) {
+    uni.showToast({
+      title: res.message,
+      icon: 'none',
+    })
+    return
+  }
+
+  const user = getUser()
+  if (user) {
+    updateUser({
+      ...user,
+      ...res.data.user,
+      mustChangePassword: false,
+    })
+  }
+
   uni.showToast({
-    title: '已保存',
+    title: '密码已更新',
     icon: 'success',
   })
+
+  setTimeout(() => {
+    redirectByRole(res.data.user?.role || user?.role)
+  }, 400)
 }
 </script>
 
 <template>
   <PageContainer>
-    <Header title="修改密码" show-back />
+    <Header :title="required ? '设置新密码' : '修改密码'" :show-back="!required" />
     <view class="form-card">
+      <view v-if="required" class="tip">
+        首次登录需要修改初始密码，完成后即可进入系统。
+      </view>
       <view class="form-item">
         <text class="label">原密码</text>
         <input v-model="form.oldPassword" class="input" password placeholder="请输入原密码" />
@@ -34,7 +91,7 @@ const savePassword = () => {
         <text class="label">确认新密码</text>
         <input v-model="form.confirmPassword" class="input" password placeholder="请再次输入新密码" />
       </view>
-      <DbbButton text="保存" type="success" @click="savePassword" />
+      <DbbButton text="保存" type="success" :disabled="loading" @click="savePassword" />
     </view>
   </PageContainer>
 </template>
@@ -44,6 +101,13 @@ const savePassword = () => {
   padding: 32rpx 28rpx;
   border-radius: 24rpx;
   background: #ffffff;
+}
+
+.tip {
+  margin-bottom: 28rpx;
+  color: #7e8a9d;
+  font-size: 26rpx;
+  line-height: 40rpx;
 }
 
 .form-item {

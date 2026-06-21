@@ -1,27 +1,42 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import { wechatSilentLogin } from '@/api/auth'
+import { isUseCloud } from '@/config/cloud'
 import {
   clearAuth,
-  redirectByRole,
+  finishAuthFlow,
+  redirectToChangePassword,
+  redirectToLogin,
   setAuth,
   setMockOpenid,
-  setPendingOpenid,
 } from '@/untils/auth'
 
 const loadingText = ref('正在进行微信静默登录...')
 
-const handleLoginResult = (res) => {
-  const { bindStatus, token, user, openid } = res.data
-
-  if (bindStatus === 'bound') {
-    setAuth({ token, user })
-    redirectByRole(user.role)
+const handleSilentLoginResult = (res) => {
+  if (res.code !== 0) {
+    uni.showToast({
+      title: res.message || '登录失败',
+      icon: 'none',
+    })
+    redirectToLogin()
     return
   }
 
-  setPendingOpenid(openid)
-  uni.redirectTo({ url: '/pages/auth/bind' })
+  const { status, token, user } = res.data
+
+  if (status === 'ok') {
+    finishAuthFlow({ token, user })
+    return
+  }
+
+  if (status === 'need_change_password') {
+    setAuth({ token, user })
+    redirectToChangePassword(true)
+    return
+  }
+
+  redirectToLogin()
 }
 
 const runSilentLogin = async (mockOpenid) => {
@@ -29,7 +44,7 @@ const runSilentLogin = async (mockOpenid) => {
   if (mockOpenid) setMockOpenid(mockOpenid)
 
   const res = await wechatSilentLogin({ mockOpenid })
-  handleLoginResult(res)
+  handleSilentLoginResult(res)
 }
 
 onMounted(() => {
@@ -47,14 +62,14 @@ onMounted(() => {
     <view class="auth-card">
       <view class="loading-title">{{ loadingText }}</view>
       <view class="loading-desc">
-        已绑定微信会自动进入系统；未绑定微信需要使用老板预先创建的手机号完成绑定。
+        已绑定微信将自动进入系统；未绑定或更换微信后，需使用手机号和密码登录。
       </view>
-      <view class="mock-actions">
+      <view v-if="!isUseCloud()" class="mock-actions">
         <view class="mock-btn primary" @click="runSilentLogin('mock-openid-boss')">
           模拟已绑定老板
         </view>
         <view class="mock-btn" @click="runSilentLogin('mock-openid-unbound')">
-          模拟未绑定员工
+          模拟需密码登录
         </view>
       </view>
     </view>

@@ -4,6 +4,7 @@ import Header from '@/components/header/index.vue'
 import PageContainer from '@/components/base/page-container.vue'
 import DbbButton from '@/components/dbb-button.vue'
 import BottomNav from '@/components/business/bottom-nav.vue'
+import { createOrder } from '@/api/order'
 
 const form = reactive({
   student: '',
@@ -12,11 +13,28 @@ const form = reactive({
   remark: '',
 })
 
-const saveOrder = () => {
-  uni.showToast({
-    title: '订单已保存',
-    icon: 'success',
+const saveOrder = async () => {
+  if (!form.student || !form.course || !form.amount) {
+    uni.showToast({ title: '请填写必填项', icon: 'none' })
+    return
+  }
+
+  const res = await createOrder({
+    studentName: form.student,
+    courseName: form.course,
+    amount: Number(form.amount),
+    remark: form.remark,
   })
+
+  if (res.code !== 0) {
+    uni.showToast({ title: res.message || '保存失败', icon: 'none' })
+    return
+  }
+
+  uni.showToast({ title: '订单已保存', icon: 'success' })
+  setTimeout(() => {
+    uni.navigateBack()
+  }, 400)
 }
 </script>
 

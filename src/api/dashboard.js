@@ -1,25 +1,55 @@
-import request from '@/untils/request'
+import { isUseCloud } from '@/config/cloud'
+import { callCloud } from '@/untils/cloud'
+import { rankingMap } from '@/mock/dashboard'
 
-export const queryBossDashboard = (data) => {
-  return request({
-    url: '/merchant_api/v1/education/dashboard/boss',
-    method: 'get',
-    data,
-  })
+const mockBossDashboard = {
+  todayAmount: 5800,
+  monthAmount: 86200,
+  monthTarget: 100000,
+  monthProgress: 86,
 }
 
-export const queryStaffDashboard = (data) => {
-  return request({
-    url: '/merchant_api/v1/education/dashboard/staff',
-    method: 'get',
-    data,
-  })
+const mockStaffDashboard = {
+  todayAmount: 1500,
+  monthAmount: 8200,
+  monthTarget: 10000,
+  monthProgress: 82,
 }
 
-export const createOrder = (data) => {
-  return request({
-    url: '/merchant_api/v1/education/orders',
-    method: 'post',
-    data,
-  })
+export const queryBossDashboard = () => {
+  if (!isUseCloud()) {
+    return Promise.resolve({ code: 0, data: mockBossDashboard })
+  }
+  return callCloud('boss_dashboard')
+}
+
+export const queryBossTarget = () => {
+  if (!isUseCloud()) {
+    return Promise.resolve({
+      code: 0,
+      data: {
+        monthAmount: mockBossDashboard.monthAmount,
+        monthTarget: mockBossDashboard.monthTarget,
+        completionRate: mockBossDashboard.monthProgress,
+      },
+    })
+  }
+  return callCloud('boss_target')
+}
+
+export const queryBossRanking = () => {
+  if (!isUseCloud()) {
+    return Promise.resolve({
+      code: 0,
+      data: { list: rankingMap.month.list },
+    })
+  }
+  return callCloud('boss_ranking')
+}
+
+export const queryStaffDashboard = () => {
+  if (!isUseCloud()) {
+    return Promise.resolve({ code: 0, data: mockStaffDashboard })
+  }
+  return callCloud('staff_dashboard')
 }

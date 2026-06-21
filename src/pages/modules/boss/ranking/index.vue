@@ -1,11 +1,13 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import Header from '@/components/header/index.vue'
 import PageContainer from '@/components/base/page-container.vue'
 import SectionCard from '@/components/business/section-card.vue'
 import RankingList from '@/components/business/ranking-list.vue'
 import BottomNav from '@/components/business/bottom-nav.vue'
+import { queryBossRanking } from '@/api/dashboard'
 import { rankingMap } from '@/mock/dashboard'
+import { isUseCloud } from '@/config/cloud'
 
 const tabs = [
   { key: 'month', label: '本月' },
@@ -14,7 +16,26 @@ const tabs = [
 ]
 
 const activeTab = ref('month')
-const activeRanking = computed(() => rankingMap[activeTab.value])
+const monthList = ref(rankingMap.month.list)
+
+const activeRanking = computed(() => {
+  if (activeTab.value === 'month' && isUseCloud()) {
+    return { label: '本月', list: monthList.value }
+  }
+  return rankingMap[activeTab.value]
+})
+
+const loadRanking = async () => {
+  if (!isUseCloud()) return
+  const res = await queryBossRanking()
+  if (res.code === 0) {
+    monthList.value = res.data.list || []
+  }
+}
+
+onMounted(() => {
+  loadRanking()
+})
 </script>
 
 <template>

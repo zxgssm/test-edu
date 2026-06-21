@@ -9,7 +9,7 @@
       }
     },
     {
-      "path": "pages/auth/bind", // 未绑定微信：使用老板已创建手机号完成账号绑定
+      "path": "pages/auth/login", // 账号密码登录：首次登录或更换微信后使用
       "style": {
         "navigationStyle": "custom",
         "enablePullDownRefresh": false

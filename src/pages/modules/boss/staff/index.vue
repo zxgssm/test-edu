@@ -1,13 +1,32 @@
 <script setup>
+import { onShow } from '@dcloudio/uni-app'
+import { ref } from 'vue'
 import Header from '@/components/header/index.vue'
 import PageContainer from '@/components/base/page-container.vue'
 import SectionCard from '@/components/business/section-card.vue'
 import BottomNav from '@/components/business/bottom-nav.vue'
-import { teachers } from '@/mock/dashboard'
+import { fetchStaffList } from '@/api/staff'
+
+const staffList = ref([])
+
+const statusLabel = {
+  pending_bind: '待绑定',
+  active: '在职',
+}
 
 const goEdit = () => {
   uni.navigateTo({ url: '/pages/modules/boss/staff/edit' })
 }
+
+const loadStaff = async () => {
+  const res = await fetchStaffList()
+  if (res.code !== 0) return
+  staffList.value = res.data.list || []
+}
+
+onShow(() => {
+  loadStaff()
+})
 </script>
 
 <template>
@@ -18,13 +37,13 @@ const goEdit = () => {
       <view class="filter">全部状态⌄</view>
     </view>
     <view class="add-btn" @click="goEdit">+ 添加员工</view>
-    <section-card title="管理账号" extra="共5人">
-      <view v-for="item in teachers" :key="item.name" class="staff-row">
+    <section-card title="管理账号" :extra="`共${staffList.length}人`">
+      <view v-for="item in staffList" :key="item.id || item.phone" class="staff-row">
         <view class="avatar">{{ item.name.slice(0, 1) }}</view>
         <view class="info">
           <view class="name">{{ item.name }}</view>
-          <view class="muted">目标：{{ item.target.toLocaleString() }}</view>
-          <view class="muted">状态：{{ item.status }}</view>
+          <view class="muted">目标：{{ Number(item.target || 0).toLocaleString() }}</view>
+          <view class="muted">状态：{{ statusLabel[item.status] || item.status }}</view>
         </view>
         <view class="edit" @click="goEdit">编辑</view>
       </view>
@@ -103,11 +122,6 @@ const goEdit = () => {
 
 .name {
   margin-bottom: 8rpx;
-  font-weight: 700;
-}
-
-.rate {
-  color: #21bd72;
   font-weight: 700;
 }
 

@@ -1,9 +1,23 @@
 <script setup>
+import { onShow } from '@dcloudio/uni-app'
+import { ref } from 'vue'
 import Header from '@/components/header/index.vue'
 import PageContainer from '@/components/base/page-container.vue'
 import SectionCard from '@/components/business/section-card.vue'
 import BottomNav from '@/components/business/bottom-nav.vue'
-import { orders } from '@/mock/dashboard'
+import { fetchOrderList } from '@/api/order'
+
+const orders = ref([])
+
+const loadOrders = async () => {
+  const res = await fetchOrderList()
+  if (res.code !== 0) return
+  orders.value = res.data.list || []
+}
+
+onShow(() => {
+  loadOrders()
+})
 </script>
 
 <template>
@@ -13,17 +27,17 @@ import { orders } from '@/mock/dashboard'
       <view class="tab active">全部</view>
     </view>
     <section-card title="">
-      <view v-for="item in orders" :key="item.time" class="order-card">
+      <view v-for="item in orders" :key="item.id || item.time" class="order-card">
         <view class="order-top">
-          <view class="student">{{ item.student }}</view>
-          <view class="amount">{{ item.amount.toLocaleString() }}元</view>
+          <view class="student">{{ item.courseName || item.student }}</view>
+          <view class="amount">{{ Number(item.amount || 0).toLocaleString() }}元</view>
         </view>
-        <view class="muted">学员：{{ item.teacher }}</view>
+        <view class="muted">学员：{{ item.studentName || item.teacher }}</view>
         <view class="order-bottom">
           <text class="muted">{{ item.time }}</text>
         </view>
       </view>
-      <view class="empty-text">没有更多了</view>
+      <view class="empty-text">{{ orders.length ? '没有更多了' : '暂无订单' }}</view>
     </section-card>
     <view class="bottom-space" />
     <bottom-nav role="staff" active="order" />
